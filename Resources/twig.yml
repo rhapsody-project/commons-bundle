@@ -1,0 +1,16 @@
+services:
+  rhapsody.commons.twig.rhapsody_extension:
+    class: 'Rhapsody\CommonsBundle\Twig\RhapsodyExtension'
+    tags:
+      - { name: "twig.extension" }
+      
+  rhapsody.commons.twig.rhapsody_lipsum_extension:
+    class: 'Rhapsody\CommonsBundle\DependencyInjection\RhapsodyLipsumExtension'
+    tags:
+      - { name: "twig.extension" }
+
+  rhapsody.commons.twig.rhapsody_routing_extension:
+    class: 'Rhapsody\CommonsBundle\Twig\RhapsodyRoutingExtension'
+    arguments: ["@service_container", "@router"]
+    tags:
+      - { name: "twig.extension" }
