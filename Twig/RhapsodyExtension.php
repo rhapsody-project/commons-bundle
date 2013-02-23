@@ -37,7 +37,7 @@ namespace Rhapsody\CommonsBundle\Twig;
  * @version   $Id$
  * @since     1.0
  */
-class RhapsodyCoreExtension extends \Twig_Extension
+class RhapsodyExtension extends \Twig_Extension
 {
 
 	/**
