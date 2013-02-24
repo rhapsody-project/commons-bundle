@@ -5,7 +5,7 @@ services:
       - { name: "twig.extension" }
       
   rhapsody.commons.twig.rhapsody_lipsum_extension:
-    class: 'Rhapsody\CommonsBundle\DependencyInjection\RhapsodyLipsumExtension'
+    class: 'Rhapsody\CommonsBundle\Twig\RhapsodyLipsumExtension'
     tags:
       - { name: "twig.extension" }
 
