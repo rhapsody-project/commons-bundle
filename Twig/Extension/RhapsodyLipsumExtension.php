@@ -25,7 +25,7 @@
  * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-namespace Rhapsody\CommonsBundle\Twig;
+namespace Rhapsody\CommonsBundle\Twig\Extension;
 
 use Rhapsody\CommonsBundle\Tools\LoremIpsumGenerator;
 
@@ -33,7 +33,7 @@ use Rhapsody\CommonsBundle\Tools\LoremIpsumGenerator;
  *
  * @author 	  Sean W. Quinn
  * @category  Rhapsody CommonsBundle
- * @package   Rhapsody\CommonsBundle\Twig
+ * @package   Rhapsody\CommonsBundle\Twig\Extension
  * @copyright Copyright (c) 2013 Rhapsody Project
  * @license   http://opensource.org/licenses/MIT
  * @version   $Id$
