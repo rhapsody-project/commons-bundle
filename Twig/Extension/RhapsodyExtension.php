@@ -27,6 +27,10 @@
  */
 namespace Rhapsody\CommonsBundle\Twig\Extension;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+
 /**
  *
  * @author 	  Sean W. Quinn

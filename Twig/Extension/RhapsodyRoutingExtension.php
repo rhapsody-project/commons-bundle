@@ -28,6 +28,7 @@
 namespace Rhapsody\CommonsBundle\Twig\Extension;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -43,13 +44,37 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class RhapsodyRoutingExtension extends \Twig_Extension
 {
 
+	/**
+	 * @var Symfony\Component\DependencyInjection\ContainerInterface
+	 * @access protected
+	 */
 	private $container;
+
+	/**
+	 * @var Symfony\Component\Routing\Generator\UrlGeneratorInterface
+	 * @access protected
+	 */
 	private $generator;
 
+	/**
+	 *
+	 * @param ContainerInterface $container
+	 * @param UrlGeneratorInterface $generator
+	 */
 	public function __construct(ContainerInterface $container, UrlGeneratorInterface $generator)
 	{
 		$this->container = $container;
 		$this->generator = $generator;
+	}
+
+	public function doParseUrl($route, array $params = array(), $component = null)
+	{
+		$url = $this->generator->generate($route, $params, UrlGenerator::ABSOLUTE_URL);
+		$components = parse_url($url);
+		if (!empty($component) && array_key_exists($component, $components)) {
+			return $components[$component];
+		}
+		return $components;
 	}
 
 	public function getFunctions()
@@ -58,6 +83,7 @@ class RhapsodyRoutingExtension extends \Twig_Extension
 
 		$functions['pageurl'] = new \Twig_Function_Method($this, 'getPageUrl');
 		$functions['pagepath'] = new \Twig_Function_Method($this, 'getPagePath');
+		$functions['parse_url'] = new \Twig_Function_Method($this, 'doParseUrl');
 		return $functions;
 	}
 

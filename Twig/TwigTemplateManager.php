@@ -25,31 +25,27 @@
  * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-namespace Rhapsody\CommonsBundle;
+namespace Rhapsody\CommonsBundle\Twig;
 
-use Rhapsody\CommonsBundle\DependencyInjection\Compiler\ManagedTemplateCompilerPass;
-
-use Rhapsody\CommonsBundle\DependencyInjection\RhapsodyCommonsExtension;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Rhapsody\CommonsBundle\Model\TemplateManager;
 
 /**
- * @author 	  Sean W. Quinn
- * @category  Rhapsody CommonsBundle
- * @package   Rhapsody\CommonsBundle
- * @copyright Copyright (c) 2013 Rhapsody Project
- * @license   http://opensource.org/licenses/MIT
- * @version   $Id$
- * @since     1.0
+ *
+ * @author Sean.Quinn
+ *
  */
-class RhapsodyCommonsBundle extends Bundle
+class TwigTemplateManager extends TemplateManager
 {
+	protected $twig;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function build(ContainerBuilder $container)
+	public function __construct(\Twig_Environment $twig)
 	{
-		$container->addCompilerPass(new ManagedTemplateCompilerPass());
+		$this->twig = $twig;
+	}
+
+	public function render($object, array $data = array())
+	{
+		$view = $this->getView($object);
+		return $this->twig->render($view, $data);
 	}
 }
