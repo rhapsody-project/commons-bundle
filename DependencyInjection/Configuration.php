@@ -52,8 +52,8 @@ class Configuration implements ConfigurationInterface
 	 */
 	public function getConfigTreeBuilder()
 	{
-		$resourceDir = $this->getResourceDirectory();
 		$treeBuilder = new TreeBuilder();
+		$rootNode = $treeBuilder->root('rhapsody_commons');
 		return $treeBuilder;
 	}
 

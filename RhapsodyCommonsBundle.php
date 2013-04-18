@@ -27,8 +27,8 @@
  */
 namespace Rhapsody\CommonsBundle;
 
-use Rhapsody\CommonsBundle\DependencyInjection\Compiler\ManagedTemplateCompilerPass;
-
+use Rhapsody\CommonsBundle\DependencyInjection\Compiler\MarkupProcessorCompilerPass;
+use Rhapsody\CommonsBundle\DependencyInjection\Compiler\TwigManagedTemplateCompilerPass;
 use Rhapsody\CommonsBundle\DependencyInjection\RhapsodyCommonsExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -50,6 +50,7 @@ class RhapsodyCommonsBundle extends Bundle
 	 */
 	public function build(ContainerBuilder $container)
 	{
-		$container->addCompilerPass(new ManagedTemplateCompilerPass());
+		$container->addCompilerPass(new MarkupProcessorCompilerPass());
+		$container->addCompilerPass(new TwigManagedTemplateCompilerPass());
 	}
 }

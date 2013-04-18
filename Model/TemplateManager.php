@@ -65,11 +65,20 @@ abstract class TemplateManager implements TemplateManagerInterface
 
 		// ** Search through the ancestors of the object for a matching template...
 		$class = new \ReflectionClass($objectClass);
+		$interfaces = $class->getInterfaceNames();
 		while ($class = $class->getParentClass()) {
 			$key = $class->getName();
 			$classes[] = $key;
 			if (array_key_exists($key, $this->templateMap)) {
 				return $this->templateMap[$key];
+			}
+		}
+
+		// ** Finally look for a template defined at the interface level...
+		foreach ($interfaces as $interface) {
+			$classes[] = $interface;
+			if (array_key_exists($interface, $this->templateMap)) {
+				return $this->templateMap[$interface];
 			}
 		}
 		throw new \InvalidArgumentException('Unable to find template for object: '.$objectClass.' in the template manager. Looked for template in: '.implode(', ', $classes));

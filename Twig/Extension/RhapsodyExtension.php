@@ -45,30 +45,23 @@ class RhapsodyExtension extends \Twig_Extension
 {
 
 	/**
-	 * (non-PHPdoc)
-	 * @see Twig_Extension::getFilters()
+	 * @var Symfony\Component\DependencyInjection\ContainerInterface
+	 * @access protected
 	 */
-	public function getFilters()
-	{
-		$filters = array(
-			// ** math function filters
-			new \Twig_SimpleFilter('floor', 'floor'),
-			new \Twig_SimpleFilter('ceil', 'ceil'),
-		);
+	protected $container;
 
-		$filters['abbreviate'] = new \Twig_Filter_Method($this, 'doAbbreviate');
-		return $filters;
+	public function __construct(ContainerInterface $container)
+	{
+		$this->container = $container;
 	}
 
-	public function getFunctions()
-	{
-		$functions = array();
-
-		$functions['bounded_range'] = new \Twig_Function_Method($this, 'doBoundedRange');
-		$functions['padded_range'] = new \Twig_Function_Method($this, 'doPaddedRange');
-		return $functions;
-	}
-
+	/**
+	 *
+	 * @param unknown $source
+	 * @param unknown $limit
+	 * @param string $byWord
+	 * @return Ambigous <string, unknown>
+	 */
 	public function doAbbreviate($source, $limit, $byWord = true)
 	{
 		$text = $source;
@@ -119,6 +112,29 @@ class RhapsodyExtension extends \Twig_Extension
 		return range($lower, $upper, $step);
 	}
 
+	public function doMarkup($source, $markup)
+	{
+		/** @var $markupProcessor \Rhapsody\CommonsBundle\Model\MarkupProcessor */
+		$markupProcessor = $this->container->get('rhapsody.commons.markup_processor');
+
+		if ($markupProcessor->supports($markup)) {
+			return $markupProcessor->run($source, $markup);
+		}
+		throw new \InvalidArgumentException('The markup: '.$markup.' is unsupported');
+	}
+
+	public function doMarkupAndStripTags($source, $markup, $allow = '')
+	{
+		/** @var $markupProcessor \Rhapsody\CommonsBundle\Model\MarkupProcessor */
+		$markupProcessor = $this->container->get('rhapsody.commons.markup_processor');
+
+		if ($markupProcessor->supports($markup)) {
+			$str = $markupProcessor->run($source, $markup);
+			return strip_tags($str);
+		}
+		throw new \InvalidArgumentException('The markup: '.$markup.' is unsupported');
+	}
+
 	/**
 	 *
 	 * @param unknown $index
@@ -139,20 +155,38 @@ class RhapsodyExtension extends \Twig_Extension
 		$range = $this->getRangeBoundaries($index, $padding, $align);
 		return $this->doBoundedRange($range['left'], $range['right'], $lowerBound, $upperBound, $step);
 		/*$left = $range['left'] < $lowerBound ? $lowerBound : $range['left'];
-		$right = $range['right'] > $upperBound ? $upperBound : $range['right'];
+			$right = $range['right'] > $upperBound ? $upperBound : $range['right'];
 		if ($upperBound < 0) {
-			$right = $range['right'];
+		$right = $range['right'];
 		}
 		return range($left, $right, $step);*/
 	}
 
-	protected function getRangeBoundaries($index, $padding, $align = 'center') {
-		$align = $this->getRangeAlignment($align);
-		if ($align === 'left') return array('left' => $index, 'right' => intval($index + $padding));
-		if ($align === 'right') return array('left' => intval($index - $padding), 'right' => $index);
+	/**
+	 * (non-PHPdoc)
+	 * @see Twig_Extension::getFilters()
+	 */
+	public function getFilters()
+	{
+		$filters = array(
+			// ** math function filters
+			new \Twig_SimpleFilter('floor', 'floor'),
+			new \Twig_SimpleFilter('ceil', 'ceil'),
+		);
 
-		$padding = floor($padding / 2);
-		return array('left' => intval($index - $padding), 'right' => intval($index + $padding));
+		$filters['abbreviate'] = new \Twig_Filter_Method($this, 'doAbbreviate');
+		$filters['markup'] = new \Twig_Filter_Method($this, 'doMarkup', array('is_safe' => array('all')));
+		$filters['markup_striptags'] = new \Twig_Filter_Method($this, 'doMarkupAndStripTags', array('is_safe' => array('all')));
+		return $filters;
+	}
+
+	public function getFunctions()
+	{
+		$functions = array();
+
+		$functions['bounded_range'] = new \Twig_Function_Method($this, 'doBoundedRange');
+		$functions['padded_range'] = new \Twig_Function_Method($this, 'doPaddedRange');
+		return $functions;
 	}
 
 	/**
@@ -166,6 +200,15 @@ class RhapsodyExtension extends \Twig_Extension
 		return 'center';
 	}
 
+
+	protected function getRangeBoundaries($index, $padding, $align = 'center') {
+		$align = $this->getRangeAlignment($align);
+		if ($align === 'left') return array('left' => $index, 'right' => intval($index + $padding));
+		if ($align === 'right') return array('left' => intval($index - $padding), 'right' => $index);
+
+		$padding = floor($padding / 2);
+		return array('left' => intval($index - $padding), 'right' => intval($index + $padding));
+	}
 
 	public function getName()
 	{

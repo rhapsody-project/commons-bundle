@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+      <parameter key="rhapsody.commons.twig.extension.rhapsody_extension.class">Rhapsody\CommonsBundle\Twig\Extension\RhapsodyExtension</parameter>
+      <parameter key="rhapsody.commons.twig.extension.rhapsody_lipsum_extension.class">Rhapsody\CommonsBundle\Twig\Extension\RhapsodyLipsumExtension</parameter>
+      <parameter key="rhapsody.commons.twig.extension.rhapsody_routing_extension.class">Rhapsody\CommonsBundle\Twig\Extension\RhapsodyRoutingExtension</parameter>
+      <parameter key="rhapsody.commons.twig.extension.markdown_extension.class">Rhapsody\CommonsBundle\Twig\Extension\RhapsodyMarkdownExtension</parameter>
+    </parameters>
+      
+    <services>
+        <service id="rhapsody.commons.twig.twig_template_manager" class="Rhapsody\CommonsBundle\Twig\TwigTemplateManager">
+          <argument type="service" id="twig" />
+        </service>
+
+        <service id="rhapsody.commons.twig.extension.rhapsody_extension" class="%rhapsody.commons.twig.extension.rhapsody_extension.class%">
+            <tag name="twig.extension" />
+            <argument type="service" id="service_container" />
+        </service>
+        
+        <service id="rhapsody.commons.twig.extension.rhapsody_lipsum_extension" class="%rhapsody.commons.twig.extension.rhapsody_lipsum_extension.class%">
+            <tag name="twig.extension" />
+        </service>
+        
+        <service id="rhapsody.commons.twig.extension.rhapsody_routing_extension" class="%rhapsody.commons.twig.extension.rhapsody_routing_extension.class%">
+            <tag name="twig.extension" />
+            <argument type="service" id="service_container" />
+            <argument type="service" id="router" />
+        </service>
+
+        <service id="rhapsody.commons.twig.extension.markdown_extension" class="%rhapsody.commons.twig.extension.markdown_extension.class%">
+            <tag name="twig.extension" />
+        </service>
+    </services>
+
+</container>

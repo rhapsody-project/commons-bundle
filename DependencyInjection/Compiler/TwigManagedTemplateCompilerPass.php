@@ -36,18 +36,18 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
  * @author Sean.Quinn
  *
  */
-class ManagedTemplateCompilerPass implements CompilerPassInterface
+class TwigManagedTemplateCompilerPass implements CompilerPassInterface
 {
 	//
 
 
 	public function process(ContainerBuilder $container)
 	{
-		if (false === $container->hasDefinition('rhapsody_commons.template_manager')) {
+		if (false === $container->hasDefinition('rhapsody.commons.twig.twig_template_manager')) {
 			return;
 		}
 
-		$definition = $container->getDefinition('rhapsody_commons.template_manager');
+		$definition = $container->getDefinition('rhapsody.commons.twig.twig_template_manager');
 
 		// Extensions must always be registered before everything else.
 		// For instance, global variable definitions must be registered
@@ -55,7 +55,7 @@ class ManagedTemplateCompilerPass implements CompilerPassInterface
 		// be registered.
 		$calls = $definition->getMethodCalls();
 		$definition->setMethodCalls(array());
-		foreach ($container->findTaggedServiceIds('rhapsody.commons.managed_template') as $id => $attributes) {
+		foreach ($container->findTaggedServiceIds('rhapsody.commons.twig.template') as $id => $attributes) {
 			$definition->addMethodCall('addManagedTemplate', array(new Reference($id)));
 		}
 		$definition->setMethodCalls(array_merge($definition->getMethodCalls(), $calls));

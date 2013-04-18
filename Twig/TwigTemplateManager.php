@@ -46,6 +46,7 @@ class TwigTemplateManager extends TemplateManager
 	public function render($object, array $data = array())
 	{
 		$view = $this->getView($object);
+		$data = array_merge(array('_widget' => $object), $data);
 		return $this->twig->render($view, $data);
 	}
 }
