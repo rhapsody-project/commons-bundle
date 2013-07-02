@@ -27,6 +27,10 @@
  */
 namespace Rhapsody\CommonsBundle\Twig\Extension;
 
+use Rhapsody\CommonsBundle\Model\TemplateManagerInterface;
+
+use Rhapsody\CommonsBundle\Model\MarkupProcessor;
+
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -45,14 +49,22 @@ class RhapsodyExtension extends \Twig_Extension
 {
 
 	/**
-	 * @var Symfony\Component\DependencyInjection\ContainerInterface
+	 *
+	 * @var unknown
+	 */
+	protected $markupProcessor;
+
+	/**
+	 *
+	 * @var \Rhapsody\CommonsBundle\Model\TemplateManagerInterface
 	 * @access protected
 	 */
-	protected $container;
+	protected $templateManager;
 
-	public function __construct(ContainerInterface $container)
+	public function __construct(MarkupProcessor $markupProcessor, TemplateManagerInterface $templateManager)
 	{
-		$this->container = $container;
+		$this->markupProcessor = $markupProcessor;
+		$this->templateManager = $templateManager;
 	}
 
 	/**
@@ -64,6 +76,19 @@ class RhapsodyExtension extends \Twig_Extension
 	 */
 	public function doAbbreviate($source, $limit, $byWord = true)
 	{
+		$text = $this->doTruncate($source, $limit, $byWord);
+		return $text.'...';
+	}
+
+	/**
+	 *
+	 * @param unknown $source
+	 * @param unknown $limit
+	 * @param string $byWord
+	 * @return Ambigous <string, unknown>
+	 */
+	public function doTruncate($source, $limit, $byWord = true)
+	{
 		$text = $source;
 		$threshold = $byWord === true ? str_word_count($text, 0) : strlen($text);
 		if ($threshold > $limit) {
@@ -73,7 +98,7 @@ class RhapsodyExtension extends \Twig_Extension
 				$wordPos = array_keys($words);
 				$pos = $wordPos[$limit];
 			}
-			$text = substr($text, 0, $pos).'...';
+			$text = substr($text, 0, $pos);
 		}
 		return $text;
 	}
@@ -114,22 +139,16 @@ class RhapsodyExtension extends \Twig_Extension
 
 	public function doMarkup($source, $markup)
 	{
-		/** @var $markupProcessor \Rhapsody\CommonsBundle\Model\MarkupProcessor */
-		$markupProcessor = $this->container->get('rhapsody.commons.markup_processor');
-
-		if ($markupProcessor->supports($markup)) {
-			return $markupProcessor->run($source, $markup);
+		if ($this->markupProcessor->supports($markup)) {
+			return $this->markupProcessor->run($source, $markup);
 		}
 		throw new \InvalidArgumentException('The markup: '.$markup.' is unsupported');
 	}
 
 	public function doMarkupAndStripTags($source, $markup, $allow = '')
 	{
-		/** @var $markupProcessor \Rhapsody\CommonsBundle\Model\MarkupProcessor */
-		$markupProcessor = $this->container->get('rhapsody.commons.markup_processor');
-
-		if ($markupProcessor->supports($markup)) {
-			$str = $markupProcessor->run($source, $markup);
+		if ($this->markupProcessor->supports($markup)) {
+			$str = $this->markupProcessor->run($source, $markup);
 			return strip_tags($str);
 		}
 		throw new \InvalidArgumentException('The markup: '.$markup.' is unsupported');
@@ -154,12 +173,29 @@ class RhapsodyExtension extends \Twig_Extension
 
 		$range = $this->getRangeBoundaries($index, $padding, $align);
 		return $this->doBoundedRange($range['left'], $range['right'], $lowerBound, $upperBound, $step);
-		/*$left = $range['left'] < $lowerBound ? $lowerBound : $range['left'];
-			$right = $range['right'] > $upperBound ? $upperBound : $range['right'];
-		if ($upperBound < 0) {
-		$right = $range['right'];
+	}
+
+	public function doDaysSinceFilter($source)
+	{
+		$timestamp = $source instanceof \DateTime ? $source->getTimestamp() : $source;
+
+		$now = strtotime('now');
+		if ($timestamp <= strtotime('today')) {
+			return 'Today';
 		}
-		return range($left, $right, $step);*/
+		if ($timestamp <= strtotime('yesterday')) {
+			return 'Yesterday';
+		}
+		return round(abs($now - $timestamp) / (60 * 60 * 24));
+	}
+
+	public function doJsonFilter($source)
+	{
+		$object = json_decode($source);
+		if ($object === null) {
+			return '{}';
+		}
+		return $source;
 	}
 
 	/**
@@ -175,8 +211,11 @@ class RhapsodyExtension extends \Twig_Extension
 		);
 
 		$filters['abbreviate'] = new \Twig_Filter_Method($this, 'doAbbreviate');
+		$filters['days_since'] = new \Twig_Filter_Method($this, 'doDaysSinceFilter');
+		$filters['json'] = new \Twig_Filter_Method($this, 'doJsonFilter', array('is_safe' => array('all')));
 		$filters['markup'] = new \Twig_Filter_Method($this, 'doMarkup', array('is_safe' => array('all')));
 		$filters['markup_striptags'] = new \Twig_Filter_Method($this, 'doMarkupAndStripTags', array('is_safe' => array('all')));
+		$filters['truncate'] = new \Twig_Filter_Method($this, 'doTruncate');
 		return $filters;
 	}
 
@@ -186,6 +225,8 @@ class RhapsodyExtension extends \Twig_Extension
 
 		$functions['bounded_range'] = new \Twig_Function_Method($this, 'doBoundedRange');
 		$functions['padded_range'] = new \Twig_Function_Method($this, 'doPaddedRange');
+		$functions['rhapsody_template'] = new \Twig_Function_Method($this, 'renderTemplatedWidget', array('is_safe' => array('all')));
+		$functions['rhapsody_template_block'] = new \Twig_Function_Method($this, 'renderTemplatedWidgetBlock', array('is_safe' => array('all')));
 		return $functions;
 	}
 
@@ -199,7 +240,6 @@ class RhapsodyExtension extends \Twig_Extension
 		if (in_array($align, array(2, 'right'))) return 'right';
 		return 'center';
 	}
-
 
 	protected function getRangeBoundaries($index, $padding, $align = 'center') {
 		$align = $this->getRangeAlignment($align);
@@ -215,4 +255,22 @@ class RhapsodyExtension extends \Twig_Extension
 		return 'rhapsody_commons_twig_core_extension';
 	}
 
+
+	/**
+	 * <p>
+	 * Renders a templated widget.
+	 * </p>
+	 *
+	 * @param mixed $widget the widget to be rendered.
+	 * @param array $options the options passed to be considered when rendering.
+	 */
+	public function renderTemplatedWidget($widget, array $options = array())
+	{
+		return $this->templateManager->render($widget);
+	}
+
+	public function renderTemplatedWigetBlock($block, $widget, $options)
+	{
+		return $this->templateManager->renderBlock($block, $widget);
+	}
 }

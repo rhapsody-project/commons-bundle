@@ -18,7 +18,8 @@
 
         <service id="rhapsody.commons.twig.extension.rhapsody_extension" class="%rhapsody.commons.twig.extension.rhapsody_extension.class%">
             <tag name="twig.extension" />
-            <argument type="service" id="service_container" />
+            <argument type="service" id="rhapsody.commons.markup_processor" />
+            <argument type="service" id="rhapsody.commons.twig.twig_template_manager" />
         </service>
         
         <service id="rhapsody.commons.twig.extension.rhapsody_lipsum_extension" class="%rhapsody.commons.twig.extension.rhapsody_lipsum_extension.class%">
