@@ -80,6 +80,22 @@ class RhapsodyExtension extends \Twig_Extension
 		return $text.'...';
 	}
 
+	public function doAttribute($array = array(), $key)
+	{
+		if (array_key_exists($key, $array)) {
+			return $key.'="'.$array[$key].'"';
+		}
+		return null;
+	}
+
+	public function doAttributeValue($array = array(), $key)
+	{
+		if (array_key_exists($key, $array)) {
+			return $array[$key];
+		}
+		return null;
+	}
+
 	/**
 	 *
 	 * @param unknown $source
@@ -223,6 +239,8 @@ class RhapsodyExtension extends \Twig_Extension
 	{
 		$functions = array();
 
+		$functions['attr'] = new \Twig_Function_Method($this, 'doAttribute', array('is_safe' => array('all')));
+		$functions['attr_value'] = new \Twig_Function_Method($this, 'doAttributeValue');
 		$functions['bounded_range'] = new \Twig_Function_Method($this, 'doBoundedRange');
 		$functions['padded_range'] = new \Twig_Function_Method($this, 'doPaddedRange');
 		$functions['rhapsody_template'] = new \Twig_Function_Method($this, 'renderTemplatedWidget', array('is_safe' => array('all')));
