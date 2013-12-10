@@ -91,8 +91,9 @@ abstract class TemplateManager implements TemplateManagerInterface
 	}
 
 	/**
-	 *
-	 * @param unknown $object
+	 * Returns the view for the managed <tt>$object</tt>.
+	 * @param mixed $object the object.
+	 * @return the view.
 	 */
 	public function getView($object)
 	{
