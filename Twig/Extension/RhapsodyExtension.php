@@ -27,10 +27,8 @@
  */
 namespace Rhapsody\CommonsBundle\Twig\Extension;
 
-use Rhapsody\CommonsBundle\Model\TemplateManagerInterface;
-
 use Rhapsody\CommonsBundle\Model\MarkupProcessor;
-
+use Rhapsody\CommonsBundle\Model\TemplateManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -43,7 +41,7 @@ use Symfony\Component\Routing\Generator\UrlGenerator;
  * @copyright Copyright (c) 2013 Rhapsody Project
  * @license   http://opensource.org/licenses/MIT
  * @version   $Id$
- * @since     1.0
+ * @since	 1.0
  */
 class RhapsodyExtension extends \Twig_Extension
 {
@@ -191,18 +189,57 @@ class RhapsodyExtension extends \Twig_Extension
 		return $this->doBoundedRange($range['left'], $range['right'], $lowerBound, $upperBound, $step);
 	}
 
-	public function doDaysSinceFilter($source)
+	private function getTimeIntervals($filter = array())
 	{
-		$timestamp = $source instanceof \DateTime ? $source->getTimestamp() : $source;
+		$periods = array('year' => 31536000, 'month' => 2592000, 'week' => 604800, 'day' => 86400, 'hour' => 3600, 'minute' => 60);
+		if (!empty($filter)) {
+			return array_intersect_key($periods, $filter);
+		}
+		return $periods;
+	}
 
+	private function getHumanReadableInterval($elapsed, $filter = array())
+	{
+		$periods = $this->getTimeIntervals($filter);
+
+		$result = '';
+		foreach ($periods as $period => $seconds) {
+			$num = floor($elapsed / $seconds);
+			$elapsed -= ($num * $seconds);
+			$result .= $num.' '.$period.(($num > 1) ? 's' : '').' ';
+		}
+		return trim($result);
+	}
+
+	public function doTimeSinceFilter($source)
+	{
 		$now = strtotime('now');
-		if ($timestamp <= strtotime('today')) {
-			return 'Today';
+		$timestamp = $source instanceof \DateTime ? $source->getTimestamp() : $source;
+		$periods = $this->getTimeIntervals();
+
+		$diff = $now - $timestamp;
+		if ($diff <= $periods['day']) {
+			if ($diff <= $periods['minute']) {
+				return 'Just now';
+			}
+			else if ($diff <= $periods['hour']) {
+				return $this->getHumanReadableInterval($diff, array('minute' => true));
+			}
+			return $this->getHumanReadableInterval($diff, array('hour' => true));
 		}
-		if ($timestamp <= strtotime('yesterday')) {
-			return 'Yesterday';
+		else if ($diff <= $periods['week']) {
+			return $this->getHumanReadableInterval($diff, array('day' => true, 'hour' => true));
 		}
-		return round(abs($now - $timestamp) / (60 * 60 * 24));
+		else if ($diff <= ($periods['week'] * 4)) {
+			return $this->getHumanReadableInterval($diff, array('week' => true, 'day' => true));
+		}
+		else if ($diff <= $periods['month']) {
+			return $this->getHumanReadableInterval($diff, array('month' => true, 'week' => true));
+		}
+		else if ($diff <= $periods['year']) {
+			return $this->getHumanReadableInterval($diff, array('year' => true, 'month' => true));
+		}
+		return $this->getHumanReadableInterval($diff, array('year' => true));
 	}
 
 	public function doJsonFilter($source)
@@ -227,7 +264,7 @@ class RhapsodyExtension extends \Twig_Extension
 		);
 
 		$filters['abbreviate'] = new \Twig_Filter_Method($this, 'doAbbreviate');
-		$filters['days_since'] = new \Twig_Filter_Method($this, 'doDaysSinceFilter');
+		$filters['time_since'] = new \Twig_Filter_Method($this, 'doTimeSinceFilter');
 		$filters['json'] = new \Twig_Filter_Method($this, 'doJsonFilter', array('is_safe' => array('all')));
 		$filters['markup'] = new \Twig_Filter_Method($this, 'doMarkup', array('is_safe' => array('all')));
 		$filters['markup_striptags'] = new \Twig_Filter_Method($this, 'doMarkupAndStripTags', array('is_safe' => array('all')));
