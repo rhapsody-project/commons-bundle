@@ -29,9 +29,6 @@ namespace Rhapsody\CommonsBundle\Twig\Extension;
 
 use Rhapsody\CommonsBundle\Model\MarkupProcessor;
 use Rhapsody\CommonsBundle\Model\TemplateManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\Generator\UrlGenerator;
 
 /**
  *
@@ -257,32 +254,30 @@ class RhapsodyExtension extends \Twig_Extension
 	 */
 	public function getFilters()
 	{
-		$filters = array(
+		return array(
 			// ** math function filters
 			new \Twig_SimpleFilter('floor', 'floor'),
 			new \Twig_SimpleFilter('ceil', 'ceil'),
+			// ** other filters
+			new \Twig_SimpleFilter('abbreviate', array($this, 'doAbbreviate')),
+			new \Twig_SimpleFilter('time_since', array($this, 'doTimeSinceFilter')),
+			new \Twig_SimpleFilter('json', array($this, 'doJsonFilter'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFilter('markup', array($this, 'doMarkup'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFilter('markup_striptags', array($this, 'doMarkupAndStripTags'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFilter('truncate', array($this, 'doTruncate')),
 		);
-
-		$filters['abbreviate'] = new \Twig_Filter_Method($this, 'doAbbreviate');
-		$filters['time_since'] = new \Twig_Filter_Method($this, 'doTimeSinceFilter');
-		$filters['json'] = new \Twig_Filter_Method($this, 'doJsonFilter', array('is_safe' => array('all')));
-		$filters['markup'] = new \Twig_Filter_Method($this, 'doMarkup', array('is_safe' => array('all')));
-		$filters['markup_striptags'] = new \Twig_Filter_Method($this, 'doMarkupAndStripTags', array('is_safe' => array('all')));
-		$filters['truncate'] = new \Twig_Filter_Method($this, 'doTruncate');
-		return $filters;
 	}
 
 	public function getFunctions()
 	{
-		$functions = array();
-
-		$functions['attr'] = new \Twig_Function_Method($this, 'doAttribute', array('is_safe' => array('all')));
-		$functions['attr_value'] = new \Twig_Function_Method($this, 'doAttributeValue');
-		$functions['bounded_range'] = new \Twig_Function_Method($this, 'doBoundedRange');
-		$functions['padded_range'] = new \Twig_Function_Method($this, 'doPaddedRange');
-		$functions['rhapsody_template'] = new \Twig_Function_Method($this, 'renderTemplatedWidget', array('is_safe' => array('all')));
-		$functions['rhapsody_template_block'] = new \Twig_Function_Method($this, 'renderTemplatedWidgetBlock', array('is_safe' => array('all')));
-		return $functions;
+		return array(
+			new \Twig_SimpleFunction('attr', array($this, 'doAttribute'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFunction('attr_value', array($this, 'doAttributeValue')),
+			new \Twig_SimpleFunction('bounded_range', array($this, 'doBoundedRange')),
+			new \Twig_SimpleFunction('padded_range', array($this, 'doPaddedRange')),
+			new \Twig_SimpleFunction('rhapsody_template', array($this, 'renderTemplatedWidget'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFunction('rhapsody_template_block', array($this, 'renderTemplatedWidgetBlock'), array('is_safe' => array('all'))),
+		);
 	}
 
 	/**

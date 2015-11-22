@@ -44,10 +44,9 @@ class RhapsodyLipsumExtension extends \Twig_Extension
 
 	public function getFunctions()
 	{
-		$functions = array(
-			'lipsum' => new \Twig_Filter_Method($this, 'generateLipsum', array('words' => 120, 'format' => 'plain', 'loremipsum' => true))
+		return array(
+			new \Twig_SimpleFilter('lipsum', array($this, 'generateLipsum'), array('words' => 120, 'format' => 'plain', 'loremipsum' => true))
 		);
-		return $functions;
 	}
 
 	public function generateLipsum($words = 120, $format = 'plain', $loremipsum = true)

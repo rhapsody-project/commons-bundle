@@ -34,11 +34,10 @@ class RhapsodyMarkdownExtension extends \Twig_Extension
 
 	public function getFilters()
 	{
-		$filters = array(
-			'markdown' => new \Twig_Filter_Method($this, 'doMarkdown', array('is_safe' => array('all'))),
-			'markdown_striptags' => new \Twig_Filter_Method($this, 'doMarkdownAndStripTags', array('is_safe' => array('all'))),
+		return array(
+			new \Twig_SimpleFilter('markdown', array($this, 'doMarkdown'), array('is_safe' => array('all'))),
+			new \Twig_SimpleFilter('markdown_striptags', array($this, 'doMarkdownAndStripTags'), array('is_safe' => array('all'))),
 		);
-		return $filters;
 	}
 
 	public function doMarkdown($source)

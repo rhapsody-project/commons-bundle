@@ -79,12 +79,11 @@ class RhapsodyRoutingExtension extends \Twig_Extension
 
 	public function getFunctions()
 	{
-		$functions = array();
-
-		$functions['pageurl'] = new \Twig_Function_Method($this, 'getPageUrl');
-		$functions['pagepath'] = new \Twig_Function_Method($this, 'getPagePath');
-		$functions['parse_url'] = new \Twig_Function_Method($this, 'doParseUrl');
-		return $functions;
+		return array(
+			new \Twig_SimpleFunction('pageurl', array($this, 'getPageUrl')),
+			new \Twig_SimpleFunction('pagepath', array($this, 'getPagePath')),
+			new \Twig_SimpleFunction('parse_url', array($this, 'doParseUrl')),
+		);
 	}
 
     public function getPagePath()
